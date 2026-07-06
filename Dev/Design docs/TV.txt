@@ -1,0 +1,309 @@
+TELA VIRTUAL
+
+A tela virtual é um array de 30x30 ponteiros. Cada ponteiro aponta para o elemento mais recente de uma respectiva célula. Uma célula é um array de elementos contendo 3 informações de cada objeto que ocupa aquela célula:
+
+Endereço do objeto
+Caractere (com cor) impresso por ele
+TickCount em que foi criado
+
+A tela virtual cobre os pontos (x,y) tal que:
+0 <= x <= 29
+0 <= y <= 29
+Um objeto com (x,y) fora desse intervalo ainda pode ser representado devido a seu tamanho e formato. Eles são definidos pela função de renderização do objeto. Os intervalos globais de (x,y) são:
+-10 <= x <= 39
+-10 <= y <= 39
+
+Quando um objeto sai desses limites, ele é removido logicamente.
+
+Quando se insere um objeto em uma célula, o valor do ponteiro correspondente é decrementado.
+
+
+
+
+ALGORITMOS
+
+
+
+
+PREAMBULO:
+
+CELULAS: var #13500
+TELAVIRTUAL: var #900
+
+inicializar_tv:
+
+	loadn r0, #CELULAS
+	loadn r1, #TELAVIRTUAL
+	loadn r2, #12
+	loadn r3, #0
+	loadn r4, #900
+
+	add r0, r0, r2 ; &fundo_primeira_celula
+	loadn r2, #15
+
+	loop_inicializar_tv:
+	
+	store r1, r0 ; set ponteiro tela virtual
+	inc r1 ; proximo ponteiro
+	add r0, r0, r2 ; &proxima_celula
+	inc r3
+	cmp r3, r4
+	jne loop_inicializar_tv
+
+INSERCAO:
+
+inserir_na_tela(x, y, end, char, tick):
+	
+	endPonteiro = TELAVIRTUAL + 30*y+x;
+	load topo, endPonteiro
+	novo_topo = inserir_na_celula(topo, end, char, tick);
+	store endPonteiro, novo_topo
+	caractere = novo_topo + 1
+	minimo = CELULAS + 15*(30*y+x)
+	cmp caractere, minimo
+	ble parar_programa
+	outchar [caractere], posTela(x, y)
+
+inserir_na_celula(celula, end, char, tick):
+	celula += 2;
+	i = 2;
+	enquanto [celula] > tick:
+		celula += 3; 
+		i++;
+	repita i vezes:
+		troca [celula] com tick
+		celula--;
+		troca [celula] com char
+		celula--;
+		troca [celula] com end
+		celula--;
+	celula++;
+
+	rts celula
+
+REMOCAO:
+
+remover_da_tela(x, y, end):
+	
+	pos = TELAVIRTUAL + 30*y+x;
+	load celula, pos
+	remover_da_celula(celula, end);
+	; como saber se a celula_modificada é pequena demais?
+	store pos, celula_modificada
+
+remover_da_celula(celula, end):
+	push celula
+	endTemp = [celula]
+	celula++
+	charTemp = [celula]
+	celula++
+	tickTemp = [celula]
+	enquanto endTemp != end:
+		celula++
+		troca [celula] [endTemp]
+		celula++
+		troca [celula] [charTemp]
+		celula++
+		troca [celula] [tickTemp]
+	pop celula
+	celula += 3
+	rts celula
+
+
+
+
+PSEUDO-ASSEMBLY:
+
+
+; inputs: r0 x, r1 y
+verificar_limites:
+
+; inputs: r0 x, r1 y
+; output: r2 posTelaReal
+get_posTelaReal:
+
+
+; inputs: r0 x, r1 y, r2 end, r3 char, r4 tick
+inserir_na_tela:
+
+	call verificar_limites
+	jz fim_inserir_na_tela 
+
+	push r0
+	push r1
+	push r2
+	push r3
+	push r4
+	push r5
+	push r6
+	push r7
+
+	loadn r7, #TELAVIRTUAL
+	loadn r6, #30
+	mul r6, r6, r1 ; 30*y
+	add r6, r6, r0 ; 30*y+x
+	add r7, r7, r6 ; endPonteiro = TELAVIRTUAL + 30*y+x
+	loadi r5, r7
+
+	call inserir_na_celula
+	; r0 x, r1 y, r2 novo_topo, r6 30*y+x, r7 endPonteiro
+
+	storei r7, r2
+	inc r2 ; &caractere
+	loadn r3, #CELULAS
+	loadn r4, #15
+	mul r6, r6, r4 ; 15*(30*y+x)
+	add r3, r3, r6 ; minimo = CELULAS + 15*(30*y+x)
+	cmp r2, r3
+	ble parar_programa
+	
+	loadi r2, r2 ; caractere
+	mov r3, r2
+	call get_posTelaReal
+	; r0 x, r1 y, r2 posTelaReal
+	outchar r2, r3
+
+	pop r7
+	pop r6
+	pop r5
+	pop r4
+	pop r3
+	pop r2
+	pop r1
+	pop r0
+	fim_inserir_na_tela:
+	rts
+
+; inputs: r2 end, r3 char, r4 tick, r5 topo
+inserir_na_celula:
+
+	push r0
+	push r1
+	push r2
+	push r3
+	push r4
+	push r5
+
+	loadn r0, #2
+	add r5, r5, r0 ; tick topo
+	mov r1, r0 ; i = 2
+	loadn r0, #3
+
+	achar_inserir_na_celula:
+	storei r6, r5 ; tickAtual
+	cmp r4, r6
+	jge fim_achar_inserir_na_celula
+	add r5, r5, r0
+	inc r1
+
+	shiftada_inserir_na_celula:
+	
+	loadi r0, r5
+	storei r5, r4
+	mov r4, r0
+	dec r5
+	loadi r0, r5
+	storei r5, r3
+	mov r3, r0
+	dec r5
+	loadi r0, r5
+	storei r5, r2
+	mov r2, r0
+	dec r5
+
+	dec r1 ; i--
+	jnz shiftada_inserir_na_celula
+
+	inc r5
+
+	pop r5
+	pop r4
+	pop r3
+	pop r2
+	pop r1
+	pop r0
+	rts
+
+; inputs: r0 x, r1 y, r2 end
+remover_da_tela:
+
+	push r5
+	call verificar_limites
+	jz fim_remover_da_tela 
+	
+	push r0
+	push r1
+	push r2
+	push r3
+	push r4
+
+	loadn r4, #TELAVIRTUAL
+	loadn r5, #30
+	mul r5, r5, r1 ; 30*y
+	add r5, r5, r0 ; 30*y+x
+	add r4, r4, r5 ; endPonteiro = TELAVIRTUAL + 30*y+x
+	loadi r3, r4
+	
+	call remover_da_celula
+	; r0 x, r1 y, r2 novo_topo, r5 30*y+x
+	storei r4, r2
+	inc r2
+	loadi r3, r2
+	call get_posTelaReal
+	; r0 x, r1 y, r2 posTelaReal
+	outchar r2, r3
+
+	pop r4
+	pop r3
+	pop r2
+	pop r1
+	pop r0
+	fim_remover_da_tela:
+	pop r5
+	rts
+
+; inputs: r2 end, r3 topo
+remover_da_celula:
+	
+	push r2
+	push r4
+	push r5
+	push r6
+	push r7
+	push r3
+	loadi r4, r3 ; endTemp
+	inc r3
+	loadi r5, r3 ; charTemp
+	inc r3
+	loadi r6, r3 ; tickTemp
+
+	loop_remover_da_celula:
+	cmp r4, r2
+	jeq fim_loop_remover_da_celula
+	
+	inc r3
+	loadi r7, r3
+	storei r3, r4
+	mov r4, r7
+	inc r3
+	loadi r7, r3
+	storei r3, r5
+	mov r5, r7
+	inc r3
+	loadi r7, r3
+	storei r3, r6
+	mov r6, r7
+
+	jmp loop_remover_da_celula
+	
+	fim_loop_remover_da_celula:
+	pop r3
+	loadn r4, #3
+	add r3, r3, r4
+	pop r7
+	pop r6
+	pop r5
+	pop r4
+	pop r2
+
+	rts

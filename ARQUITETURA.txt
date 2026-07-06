@@ -1,0 +1,54 @@
+# RESUMO
+
+O jogo tem um loop principal (tick). Cada vez que um tick é concluído, é incrementado um contador TickCount. Certas operações sobre certos objetos são realizados apenas de x em x ticks, de acordo com seu período e fase. Por exemplo:
+
+Suponha que o tick atual seja 17. Um objeto de período 5 será criado. 17 mod 5 = 2, portanto a fase desse objeto é 2. Logo, ele será processado sempre que TickCount mod 5 = 2:
+17, 22, 27, 32, 37, 42, 47
+
+Objetos com mesmo período e fase são colocados na mesma arena de memória. O período mínimo é 1 e o máximo é 16. Isso significa que os objetos mais lentos são atualizados de 16 em 16 ticks. Além disso, isso significa que 16 arenas diferentes são processadas por tick. Pseudocódigo:
+
+for P from 1 to 16:
+	fase = TickCount mod P
+	processar_arena(P, fase)
+
+# TIPOS DE OBJETO
+
+As arenas podem ter 8 tipos de objeto diferentes. Objetos de um mesmo tipo tem comportamento similar e alguns parâmetros do bitpacking padronizados. São eles:
+ - Enemy
+ - Enemy bullets
+ - Player bullets
+ - Colectables
+
+# VARIÁVEIS GLOBAIS
+
+posPlayer: var #1 ; MSB |w|s|over/underflow|y(5)|d|a|over/underflow|x(5)| LSB
+playerX: var #1
+playerY: var #1
+playerV: var #1 ; velocidade do player, considerando foco
+
+GameData:   var #1 ; MSB |protagonista(2)|vidas(2)|bombas(2)|is_shooting|is_focused|shotType(2)|power(6)| LSB !!! PODE MUDAR
+
+Score:	    var #2 ; MSB |score(32)| LSB !!! PODE MUDAR
+
+
+Cores: eu vou escolher a placa com 256 cores (DE0-CV) ou 16 (DE2-115)? Preciso ver se as 16 cores são bonitas e variadas. É possível ver as 16 cores no ICMC-IDE?
+
+Som: apenas a placa DE2-115 tem som. Preciso verificar o quão fácil é tocar um som na placa.
+
+# DANMAKU THEORY
+
+Grupos de balas: ring, stack, spread são loops for.
+Ter uma função para cada um desses, quando forem chamadas, criam as balas automaticamente ao mesmo tempo!!
+
+Subpattern: invocam grupos dependendo de variáveis timers. Por exemplo, um subpattern pode invocar anéis a cada 3 frames, então existe uma variável de timer em algum lugar que inicia com 3 e decrementa a cada frame. As funções de subpattern executam a cada frame.
+
+Portanto:
+
+GRUPOS - balas invocadas ao mesmo tempo por uma mesma função 
+* Ring: n° de balas, angle seed, velocidade, aceleracao, (x,y) do centro, 
+* Spread:
+* Stack:
+
+SUBPATTERNS - grupos invocados a intervalos regulares dependendo de timers verificados por uma função a cada frame
+PATTERNS - funções que invocam vários subpatterns a cada frame
+SPELL CARDS - parâmetros de tudo, definidos em algum lugar

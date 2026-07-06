@@ -1,0 +1,97 @@
+TABELAtmax: var #80
+; A = 0
+static TABELAtmax + #0, #16
+; A = 1-9
+static TABELAtmax + #1, #16
+static TABELAtmax + #2, #15
+static TABELAtmax + #3, #16
+static TABELAtmax + #4, #15
+static TABELAtmax + #5, #15
+static TABELAtmax + #6, #16
+static TABELAtmax + #7, #15
+static TABELAtmax + #8, #15
+static TABELAtmax + #9, #14
+; A = 10 
+static TABELAtmax + #10, #16	
+; A = 11 - 19
+static TABELAtmax + #11, #14
+static TABELAtmax + #12, #15
+static TABELAtmax + #13, #15
+static TABELAtmax + #14, #16
+static TABELAtmax + #15, #15
+static TABELAtmax + #16, #15
+static TABELAtmax + #17, #16
+static TABELAtmax + #18, #15
+static TABELAtmax + #19, #16
+; A = 20
+static TABELAtmax + #20, #16
+; A = 21 - 29
+static TABELAtmax + #21, #16
+static TABELAtmax + #22, #15
+static TABELAtmax + #23, #16
+static TABELAtmax + #24, #15
+static TABELAtmax + #25, #15
+static TABELAtmax + #26, #16
+static TABELAtmax + #27, #15
+static TABELAtmax + #28, #15
+static TABELAtmax + #29, #14
+; A = 30
+static TABELAtmax + #30, #16
+; A = 31 - 39
+static TABELAtmax + #31, #14
+static TABELAtmax + #32, #15
+static TABELAtmax + #33, #15
+static TABELAtmax + #34, #16
+static TABELAtmax + #35, #15
+static TABELAtmax + #36, #15
+static TABELAtmax + #37, #16
+static TABELAtmax + #38, #15
+static TABELAtmax + #39, #16
+; A = 40
+static TABELAtmax + #40, #16
+; A = 41 - 49
+static TABELAtmax + #41, #16
+static TABELAtmax + #42, #15
+static TABELAtmax + #43, #16
+static TABELAtmax + #44, #15
+static TABELAtmax + #45, #15
+static TABELAtmax + #46, #16
+static TABELAtmax + #47, #15
+static TABELAtmax + #48, #15
+static TABELAtmax + #49, #14
+; A = 50
+static TABELAtmax + #50, #16
+; A = 51 - 59
+static TABELAtmax + #51, #14
+static TABELAtmax + #52, #15
+static TABELAtmax + #53, #15
+static TABELAtmax + #54, #16
+static TABELAtmax + #55, #15
+static TABELAtmax + #56, #15
+static TABELAtmax + #57, #16
+static TABELAtmax + #58, #15
+static TABELAtmax + #59, #16
+; A = 60
+static TABELAtmax + #60, #16
+; A = 61 - 69
+static TABELAtmax + #61, #16
+static TABELAtmax + #62, #15
+static TABELAtmax + #63, #16
+static TABELAtmax + #64, #15
+static TABELAtmax + #65, #15
+static TABELAtmax + #66, #16
+static TABELAtmax + #67, #15
+static TABELAtmax + #68, #15
+static TABELAtmax + #69, #14
+; A = 70
+static TABELAtmax + #70, #16
+; A = 71 - 79
+static TABELAtmax + #71, #14
+static TABELAtmax + #72, #15
+static TABELAtmax + #73, #15
+static TABELAtmax + #74, #16
+static TABELAtmax + #75, #15
+static TABELAtmax + #76, #15
+static TABELAtmax + #77, #16
+static TABELAtmax + #78, #15
+static TABELAtmax + #79, #16

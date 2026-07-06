@@ -1,0 +1,15 @@
+r0 a r7 = registradores de propósito geral
+fr = flag register. Flags:
+
+	              StacArith
+16151413121110 9 8 7 6 5 4 3 2 1 0
+| | | | | | | |-|↓|↑|÷|↑|c|0|=|<|>|
+
+SP: ponteiro do topo da stack. Inicia no último endereço. Diminui 1 unidade com push e aumenta 1 unidade com pop
+PC: endereço da próxima instrução a ser executada
+IR: qual é a instrução a ser executada
+KB: input do teclado no momento atual. É capturado pelo inchar e levado a um registrador
+WC: não sei
+
+Nomes de variáveis não podem conter .
+main: deve ser a primeira função do programa

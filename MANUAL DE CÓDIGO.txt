@@ -1,0 +1,60 @@
+# Nomenclatura:
+
+minha_funcao
+variavelGlobal. não usar ponto em nome de variável
+TABELAblabla
+ENDblabla
+loop_fim_minha_funcao
+skip_operacao_minha_funcao
+
+# Documentação:
+
+Linhas que podem ser apagadas devem ser comentadas com APAGAR, e linhas cruciais para o funcionamento do código devem ser marcados comentadas com IMPORTANTE
+
+## Como deve ser uma função:
+
+;explicando o que ela faz e como faz
+;input: r0 explicacao, r1 explicacao, r2 explicacao ...
+;internos: r3 explicacao, r4 explicacao ...
+;output: r0 explicacao, r1 explicacao, r2 explicacao ...
+label_da_funcao:
+
+push registradores internos e input que não são output
+atribuição de registradores internos
+
+logica
+
+store memoria
+loadn registradores
+pop registradores internos e input que não são output
+rts
+
+## Como deve ser uma chamada de função
+
+lógica anterior
+
+; 2 espaços
+atribui registradores input
+call label_da_funcao
+usa o valor de retorno
+
+; 2 espaços
+lógica posterior
+
+# Técnicas de design
+
+Interprete o funcionamento do código além de loops e funções: desenhe árvores, máquinas de estado, diagramas
+
+Como chamar uma função pelo ponteiro dela armazenado em um registrador:
+
+func:
+
+logica...
+
+rts ; Mem[SP]->PC, PC recebe o endereço de retorno
+
+push #retorno ; empilhar o endereço de retorno
+push reg ; empilhar o endereço da função
+rts ; Mem[SP]->PC, PC recebe o endereço da função
+retorno:
+

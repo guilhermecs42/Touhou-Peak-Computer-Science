@@ -1,0 +1,52 @@
+ALGORITMO PARA ATUALIZAR (x,y) DE UMA BALA. DEVE SER RE-ANALISADO E REESCRITO DE ACORDO COM OS NOVOS MACROS.
+
+; r5 = CurAdressEB
+; r4 = temp
+; r3 = A*16 + t
+; r2 = t
+; r0 = dx/dy/tmax, leitura das tabelas
+; r1 = x/y
+
+loadn r5, #CurAdressEB
+
+; Obtendo A, t, A*16, A*16+t para acessar as tabelas
+
+@GET r2, r5, r4 EBPos.t
+@GET r3, r5, r4 EBPos.A
+
+shiftl0 r3, #4 ; calcula A*16
+add r3, r3, r2 ; calcula A*16 + t, mantém t em r2
+
+; Obtendo dx e obtendo x+dx
+
+loadn r0, #TABELAdx
+add r0, r0, r3
+loadi r0, r0 ; r0 contém dx
+
+@GET r1, r5, r4, EBPos.x
+add r1, r1, r0
+@SET r5, r1, r4, EBPos.x 
+
+; Obtendo dy e obtendo y+dy
+
+loadn r0, #TABELAdy
+add r0, r0, r3
+loadi r0, r0 ; r0 contém dy
+
+@GET r1, r5, r4, EBPos.y
+add r1, r1, r0
+@SET r5, r1, r4, EBPos.y
+
+; Atualizando t, consultando tmax
+
+inc r2 ; t é incrementado
+loadn r0, #TABELAtmax
+add r0, r0, r3
+loadi r0, r0 ; r0 contém tmax
+cmp r2, r0 ; comparar t com tmax
+jne ARMAZENAR_t
+
+loadn r2, #0
+
+ARMAZENAR_t:
+@SET r5, r2, r4, EBPos.t

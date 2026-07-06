@@ -1,0 +1,126 @@
+SOMENTE FAZER APÓS TERMINAR O PROJETO OU ENCONTRAR ALGUM PROBLEMA DE DESEMPENHO!!!
+
+As funções MOVER_CIMA, BAIXO, ESQUERDA, DIREITA tem muitos jumps repetidos. Em vez de fazerem elas retornarem para PROCESSAR_INPUT_RET, elas podem retornar para a main. Isso exige que o código na main faça o store das novas coordenadas em r3, r4 e r5 de volta para a memória.
+Nessa mesma função, talvez dê para mover a shiftada e verificação de frame para o início
+
+Dá para fazer a checagem de mod dentro do LIMPAR_TELA na main
+
+É excelente que você já esteja pensando nisso! O fato de você já ter usado um `xor r4, r4, r4` para zerar um registrador de forma eficiente (o que gasta menos memória e ciclos do que um `loadn r4, #0`) mostra que você já tem o "instinto" de um programador de baixo nível.
+
+A otimização em Assembly geralmente se divide em três batalhas: **Ciclos de Clock** (fazer rodar mais rápido), **Tamanho do Código** (gastar menos ROM) e **Uso de Memória** (gastar menos RAM). 
+
+Aqui estão 3 conceitos e técnicas de nível profissional que você pode aplicar no seu código no futuro:
+
+### 1. A Morte do `MOD` (Otimização de Ciclos)
+A instrução `mod` (junto com a `div` e `mul`) é uma das operações aritméticas mais "caras" que um processador pode executar. Em hardware real, ela exige vários ciclos de clock em um subcircuito complexo. 
+
+Para contadores simples (como o seu `FrameMod` que vai de 0 a 4), é muito mais rápido fazer um **Reset Condicional** usando `cmp`.
+
+**Como é hoje (Usa hardware de divisão):**
+```assembly
+inc r1
+loadn r2, #5
+mod r1, r1, r2
+```
+
+**A Técnica Otimizada (Usa apenas hardware de soma e lógica):**
+```assembly
+inc r1
+loadn r2, #5
+cmp r1, r2
+jne SALTA_RESET  ; Se não chegou em 5, pula
+xor r1, r1, r1   ; Se chegou em 5, zera rápido (FrameMod = 0)
+SALTA_RESET:
+```
+Isso economiza *muitos* ciclos do processador e dá o mesmíssimo resultado.
+
+### 3. Aritmética de Ponteiro Direto (Menos RAM e Instruções)
+Atualmente você armazena o `PlayerX` e o `PlayerY`. E, no `RENDER_PERSONAGEM`, você usa um `mul` para fazer `(Y * 40) + X`.
+
+**O Conceito:** Uma tela é apenas um grande vetor linear de 0 a 1199. Se você armazenar apenas a **Posição Absoluta** (o Ponteiro), você elimina a necessidade do `PlayerX`, do `PlayerY` e da instrução `mul`!
+
+* Em vez de "Mover para a Direita" ser `X + 1`, passa a ser `PosicaoAtual + 1`.
+* Em vez de "Mover para Baixo" ser `Y + 1`, passa a ser `PosicaoAtual + 40`.
+* A sua colisão vira matemática simples. Por exemplo, saber se bateu na parede direita é só fazer `mod 40` da posição atual e ver se é igual a 39. 
+
+---
+
+### 4. Zero-Flag no Loop (Otimização de Micro-Ciclos)
+Olhe para o seu `DELAY`:
+```assembly
+DELAY_loop:
+dec r0
+cmp r1, r0
+jne DELAY_loop
+```
+Na maioria das arquiteturas modernas (e possivelmente na sua), instruções matemáticas como `dec` e `sub` atualizam sozinhas uma "flag" interna do processador chamada *Zero Flag (ZF)*. Se o resultado de `dec r0` chegar a zero, a ZF acende.
+Isso significa que você frequentemente não precisa do `cmp`. Você pode simplesmente usar um salto condicional que lê o resultado do `dec`:
+```assembly
+DELAY_loop:
+dec r0
+jnz DELAY_loop ; "Jump if Not Zero" - Pula de volta se o dec não deu zero!
+```
+---
+
+If you are looking for the "Holy Grail" of Assembly optimizations, we need to move beyond just saving a few instructions and start changing the way the **hardware** and **algorithms** interact.
+
+Here are the three "Heavyweight" optimizations used by professional game developers for 8-bit and 16-bit systems.
+
+---
+
+### 1. Multiplication by Shift and Add (The "Math Cheat")
+The `MUL` instruction is incredibly slow. In many architectures, it can take 10 to 40 times longer than a simple addition. Since your screen width is **40**, you can calculate `Y * 40` using only bitwise shifts and one addition.
+
+Because $40 = 32 + 8$, we know that:
+$$Y \cdot 40 = (Y \cdot 32) + (Y \cdot 8)$$
+
+In binary, multiplying by 32 is shifting left 5 times ($Y \ll 5$), and multiplying by 8 is shifting left 3 times ($Y \ll 3$).
+
+**The Optimized `RENDER_PERSONAGEM`:**
+```assembly
+RENDER_PERSONAGEM:
+    load r0, #PlayerY
+    
+    shl r0, r0, #5    ; r0 = Y * 32
+    load r1, #PlayerY
+    shl r1, r1, #3    ; r1 = Y * 8
+    
+    add r0, r0, r1    ; r0 = (Y * 32) + (Y * 8) = Y * 40
+    load r1, #PlayerX
+    add r0, r0, r1    ; Final address
+    
+    loadn r1, #'@'
+    outchar r1, r0
+    rts
+```
+**Why this is huge:** You just replaced a heavy `MUL` unit with simple bit-shifters. This is much "cheaper" for the CPU to execute.
+
+---
+
+### 2. Look-Up Tables (LUT)
+If you have plenty of memory but want maximum speed, stop doing math entirely. A **Look-Up Table** is a pre-calculated list of answers stored in your `data` section.
+
+Instead of calculating the start of every row, you store the start addresses in an array:
+`RowOffsets: static #0, #40, #80, #120, #160 ...`
+
+**The LUT Logic:**
+```assembly
+; To find address for Row 5:
+loadn r1, #RowOffsets
+load r2, #PlayerY
+add r1, r1, r2      ; Point to RowOffsets + PlayerY
+loadi r0, r1        ; Load the pre-calculated (Y * 40) directly from memory!
+```
+
+
+This reduces a complex calculation to a single memory read. This is how games like *Doom* and *Wolfenstein 3D* achieved such high speeds on old hardware.
+
+---
+
+### 4. Bit-Masking for Powers of 2
+If you ever change your game area to be a power of 2 (like 16x16 or 32x32), your collision detection becomes instant. 
+
+To see if a character is at the edge of a 32-pixel boundary, you don't use `CMP`. You use `AND`:
+* `r0 AND 31` (which is `00011111` in binary).
+* If the result is `0`, you are at the start of a row.
+* If the result is `31`, you are at the end of a row.

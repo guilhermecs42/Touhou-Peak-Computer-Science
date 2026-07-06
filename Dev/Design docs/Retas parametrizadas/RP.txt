@@ -1,0 +1,95 @@
+PARÂMETROS:
+
+(x', y') = f(x, y, A, t)
+
+bulletWord 2:
+
+t = 4 bits (0-15) ; parametrização da reta
+A = 7 bits (0-79) ; ângulo da reta
+
+MECANISMO:
+
+TABELAdx é uma matriz de 80 x 16 valores, um para cada ângulo e parâmetro. A fórmula para acessar um valor é A*16 + t. 
+
+TABELAdy é uma matriz de 80 x 16 valores, um para cada ângulo e parâmetro. A fórmula para acessar um valor é A*16 + t
+
+TABELAtmax é um array de 80 valores, um para cada ângulo e parâmetro. A fórmula para acessar um valor é A
+
+ALGORITMO:
+
+Load bulletWord 2
+Get A
+Get t
+Offset = A*16 + t
+
+Get x
+dx = load (TABELAdx + Offset)
+x' = x + dx
+Set x'
+
+Get y
+dy = load (TABELAdy + Offset)
+y' = y + dy
+Set y'
+
+t += 1
+tmax = load (TABELAtmax + A)
+if(t == tmax) t = 0
+Set t
+
+PSEUDO-ASSEMBLY:
+
+; input r0: &BulletWord0
+
+reta_parametrizada:
+
+push r0
+push r1
+push r2
+push r3
+push r4
+push r5
+
+inc r0
+inc r0
+push r0 ; push &BulletWord2
+loadi r0, r0 ; load BulletWord2
+@GET r1, r0, EB2RP.A
+@GET r2, r0, EB2RP.t
+mov r3, r1
+shiftl0 r3, #4
+add r3, r3, r2 ; offset = A*16 + t
+
+@GET r4, r0, EB2RP.x ; get x
+loadn r5, #TABELAdx
+add r5, r5, r3 ; TABELAdx + offset
+loadi r5, r5 ; get dx
+add r4, r4, r5 ; x' = x + dx
+@SET r0, r4, EB2RP.x ; set x'
+
+@GET r4, r0, EB2RP.y ; get y
+loadn r5, #TABELAdy
+add r5, r5, r3 ; TABELAdy + offset
+loadi r5, r5 ; get dy
+add r4, r4, r5 ; y' = y + dy
+@SET r0, r4, EB2RP.y ; set y'
+
+inc r2
+loadn r3, #TABELAtmax
+add r3, r3, r1 ; TABELAtmax + A
+loadi r3, r3 ; tmax
+cmp r2, r3
+jeq skip_zerar_t_reta_parametrizada
+loadn r2, #0
+skip_zerar_t_reta_parametrizada
+@SET r0, r2
+
+pop r4 ; &BulletWord2
+store r4, r0 
+
+pop r5
+pop r4
+pop r3
+pop r2
+pop r1
+pop r0

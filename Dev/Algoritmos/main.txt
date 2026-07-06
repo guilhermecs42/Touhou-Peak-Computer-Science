@@ -1,0 +1,117 @@
+periodoMaximo P
+ENDbaseFimGrupos
+tamGrupo
+TABELAendInsercao
+TABELAendRemocao
+TABELAfuncoesEBmover
+TABELAfuncoesEBapagar
+
+FUNÇÕES AUXILIARES
+
+get_grupo(período):
+
+fase = TickCount mod período
+i = período(período-1)/2 + fase
+rts i
+
+get_ENDfimGrupo(período):
+ 
+i = get_grupo()
+ENDbaseFimGrupos + i*tamGrupo
+rts
+
+get_endInsercao(período):
+
+i = get_grupo()
+endInsercao = [TABELAendInsercao+i]
+rts endInsercao
+
+get_endRemocao(período):
+
+i = get_grupo()
+endRemocao = [TABELAendRemocao+i]
+rts endRemocao
+
+set_endInsercao(período, novo):
+
+i = get_grupo()
+store TABELAendInsercao+i, novo
+rts
+
+set_endRemocao(período, novo):
+
+i = get_grupo()
+store TABELAendRemocao+i, novo
+rts
+
+FUNÇÕES PRINCIPAIS
+
+main_loop:
+
+for x de P até 1:
+        mover_balas(x)
+        apagar_balas(x)
+fimfor
+mover_player()
+criar_balas()
+
+for x de P até 1:
+        renderizar_balas(x)
+fimfor
+
+processar_grupo(período):
+
+get_posicao_insercao(período)
+get_posicao_remocao(período)
+for x de endRemocao até endInsercao-1:
+         load [x]
+         getTipoBala([x])
+         END_FUNC = [tipoBala + TABELAfuncoesEBmover]
+         x = call END_FUNC(x, [x], tipo)
+fimfor
+rts
+
+inserir_bala(n° de palavras, período):
+
+get_posicao_insercao(período)
+repita n° de palavras vezes:
+        pop palavra
+        store [endInsercao], palavra
+        inc endInsercao
+get_ENDfimGrupo(período)
+
+se endInsercao == endereçoFimGrupo:
+          endInsercao -=  tamGrupoS
+fimse
+
+se endInsercao == endRemocao:
+         halt
+; se após inserir uma bala, eu atinjo a posição de remoção, a fila está cheia
+fimse
+rts
+
+remover_balas(período):
+
+get_endRemocao(período)
+get_endInsercao(período)
+get_ENDfimGrupo(período)
+
+remover_balas_loop:
+
+se endRemocao == endInsercao:
+      goto remover_balas_loop_fim
+fimse
+
+load [endRemocao]
+get bala.x
+get bala.y
+Se x ou y estiver fora dos limites:
+      
+      inc endRemocao
+      se endRemocao == endereço_fim_grupo:
+               endRemocao = endereçoFimGrupo - tamGrupoS 
+      goto remover_balas_loop
+
+remover_balas_loop_fim:
+
+rts

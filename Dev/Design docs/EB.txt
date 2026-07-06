@@ -1,0 +1,85 @@
+ENEMY BULLETS
+
+Uma bala é completamente descrita por: seus parâmetros iniciais (cor, posição, velocidade, ângulo, etc), uma função que calcula a nova posição da bala, uma função que atualiza seus parâmetros (exceto posição), e uma função que a comunica com a tela virtual definindo tamanho e caracteres
+
+Balas não tem classe, i.e elas não pertencem a categorias pré-determinadas. Logo, a combinação das funções de movimento e de tela virtual pode ser qualquer possível.
+
+Balas não tem construtores. Portanto, as funções e atributos iniciais da bala (definidos no bitpacking) deve ser feito pela função de danmaku responsável (geralmente uma função de gerar um grupo). Os seguintes parâmetros se localizam nos mesmos bits em todas as balas:
+
+ - Tipo de objeto (Enemy Bullet)
+ - Número da função de movimento
+ - Número da função de interação com a tela virtual
+ - Cor
+ - Número da função de atualização
+ - Posição (x,y)
+
+Existe uma única função que, dado o período, carrega qualquer bala na arena. Para chamá-la, as bulletWords devem ser empilhadas pela stack na ordem certa.
+
+Toda bala ocupa um número de palavras fixo: 4 palavras.
+
+
+RESUMO DAS FUNÇÕES:
+
+mover: calcula uma nova posição a partir da posição atual e dos parâmetros necessários. Armazena a nova posição na memória, substituindo a anterior.
+
+(x', y') = f(x, y, parâmetros)
+
+atualizar: calcula os novos parâmetros a partir dos parâmetros antigos, da posição atual e do que mais for necessário. Armazena os novos parâmetros na memória.
+
+[parâmetros'] = f(x, y, parâmetros, outros)
+
+esconder/renderizar: especifica o tamanho e sprites da bala, remove ou insere a bala usando a API tela virtual a partir de sua posição atual, formato e cor. Função esconder: retorna o TickCount em que a bala foi criada (armazenado na tela virtual). Função renderizar: recebe o TickCount em que a bala foi criada.
+
+Quando uma bala é criada, as seguintes funções devem ser chamadas:
+
+mover
+renderizar
+
+O motivo é que se tentarmos renderizar múltiplas balas criadas no mesmo local sem deslocá-las um pouco antes, a tela virtual pode sofrer overflow.
+
+A ordem de chamar as funções é:
+
+esconder
+mover
+renderizar
+atualizar
+
+
+
+BITPACKING DE UMA BALA:
+
+bulletWord 0:
+
+Tipo objeto: 2 bits
+Função de movimento: 2 bits
+Função de tela virtual: 4 bits
+Cor: 8 bits
+
+bulletWord 1:
+
+Função de atualização: 4 bits
+x: 6 bits
+y: 6 bits
+
+bulletWord 2 e 3 dependem da função de movimento e de atualização.
+
+
+
+FUNÇÕES DE MOVIMENTO:
+
+RETAS PARAMETRIZADAS
+
+(x', y') = f(x, y, A, t)
+
+bulletWord 2:
+
+t = 4 bits (0-15) ; parametrização da reta
+A = 7 bits (0-79) ; ângulo da reta
+
+
+
+FUNÇÕES DE ATUALIZAÇÃO:
+
+LINEAR
+
+t' = f(A, t)
